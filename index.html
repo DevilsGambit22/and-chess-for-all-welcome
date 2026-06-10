@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent !important;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      height: 150px;
+      overflow: hidden;
+    }
+    .welcome-card {
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+    .avatar-glow {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: 2px solid #ffd700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+      object-fit: cover;
+      margin-bottom: 10px;
+      background-color: #050a14;
+    }
+    .welcome-text {
+      font-size: 14px;
+      color: #e0e0e0;
+    }
+    .username {
+      color: #ffd700;
+      font-weight: bold;
+      display: block;
+      font-size: 18px;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+      margin-top: 4px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="welcome-card" id="card" style="display: none;">
+    <img id="user-avatar" src="" class="avatar-glow" alt="Avatar">
+    <div class="welcome-text">
+      Welcome to the club,
+      <span id="user-name" class="username"> @Loading...</span>
+    </div>
+  </div>
+
+  <script>
+    async function fetchNewestMember() {
+      try {
+        const response = await fetch('https://api.chess.com/pub/club/and-chess-for-all/members');
+        const data = await response.json();
+        
+        // Preluăm membrii din listele dinamice oferite de Chess.com
+        const allMembers = data.weekly || data.monthly || data.all_time;
+        
+        if (allMembers && allMembers.length > 0) {
+          // Ultimul membru din array este cel mai recent înscris
+          const newestMember = allMembers[allMembers.length - 1];
+          
+          // Extragerea avatarului actualizat direct din profilul public al jucătorului
+          const userResponse = await fetch(`https://api.chess.com/pub/player/${newestMember.username}`);
+          const userData = await userResponse.json();
+          
+          getElementById('user-name').innerText = `@${newestMember.username}`;
+          getElementById('user-avatar').src = userData.avatar || 'https://images.chesscomfiles.com/uploads/v1/user/200.png';
+          getElementById('card').style.display = 'block';
+        }
+      } catch (error) {
+        console.error("Eroare API Chess.com:", error);
+        getElementById('user-name').innerText = ` @New Warrior`;
+        getElementById('user-avatar').src = 'https://images.chesscomfiles.com/uploads/v1/user/200.png';
+        getElementById('card').style.display = 'block';
+      }
+    }
+
+    fetchNewestMember();
+  </script>
+</body>
+</html>
